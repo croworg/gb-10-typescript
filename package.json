@@ -1,0 +1,13 @@
+{
+  "name": "10-typesctript",
+  "version": "1.0.0",
+  "main": "public/index.html",
+  "scripts": {
+    "build": "rm -fr public/scripts && tsc",
+    "build:dev": "rm -fr public/scripts && tsc -p tsconfig-dev.json",
+    "start": "http-server -p 3300"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
