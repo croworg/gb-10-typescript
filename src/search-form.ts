@@ -1,5 +1,24 @@
 import { renderBlock } from './lib.js'
 
+interface SearchFormData {
+  checkinDate: Date;
+  checkoutDate: Date;
+  maxPrice?: number;
+}
+
+export function searchDataHandle(): void {
+  const checkinRaw = (<HTMLInputElement>document.getElementById("check-in-date")).value;
+  const checkoutRaw = (<HTMLInputElement>document.getElementById('check-out-date')).value;
+  const checkinDate = new Date(checkinRaw);
+  const checkoutDate = new Date(checkoutRaw);
+
+  searchDataFunc({ checkinDate, checkoutDate })
+}
+
+export function searchDataFunc(data: SearchFormData): void {
+  console.log(data);
+}
+
 export function renderSearchFormBlock(checkinDate: Date, checkoutDate: Date) {
   const today = new Date();
 
@@ -24,9 +43,6 @@ export function renderSearchFormBlock(checkinDate: Date, checkoutDate: Date) {
   const curCheckOutDate = checkoutDate ? checkDate(checkinDate, checkoutDate) : addDays(curCheckInDate, 3);
   const minDate = dateStr(today);
   const maxDate = dateStr(new Date(today.getFullYear(), today.getMonth() + 2, 1));
-
-
-  console.log(dateStr(curCheckInDate), dateStr(curCheckOutDate));
 
   renderBlock(
     'search-form-block',
