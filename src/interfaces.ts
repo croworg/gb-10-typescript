@@ -23,9 +23,16 @@ export const defaultUser: User = {
 }
 
 export interface Reserve {
-  result: string[]
+  bookedDates: unknown[]
+  description: string
+  id: number
+  image: string
+  name: string
+  price: number
+  remoteness: number
+  result?: string[]
 }
 
 export interface ReserveCallback {
-  (error?: Error, result?: Reserve): void
+  (error?: Error, result?: Reserve[]): void
 }

@@ -1,22 +1,57 @@
 import { ReserveCallback, SearchFormData } from './interfaces.js'
-import { renderBlock } from './lib.js'
+import { placesCoordinates, renderBlock, renderToast } from './lib.js'
+import { renderSearchResultsBlock } from './search-results.js';
+
+interface requestParameters {
+  coordinates: string;
+  checkinDate: number;
+  checkoutDate: number;
+  maxPrice: number;
+}
 
 export const searchCallback: ReserveCallback = (error, result) => {
   if (error === null && result !== null) {
-    console.log('Reserved');
+    renderSearchResultsBlock(result);
   }
   else {
-    console.log('Error', error.message);
+    renderToast({ type: "error", text: "Повторите поиск" });
   }
 }
 
-export function search(searchParams: SearchFormData, callback: ReserveCallback): void {
-  console.log('searchParams: ', searchParams);
+export async function search(searchParams: SearchFormData, callback: ReserveCallback): Promise<void> {
+  // console.log('searchParams: ', searchParams);
+  const startDate = searchParams.checkinDate.toISOString().split('T', 1);
+  const endDate = searchParams.checkoutDate.toISOString().split('T', 1);
+
+  const f = await fetch(`http://127.0.0.1:3300/places?coordinates=${placesCoordinates.get(searchParams.city)}
+  &checkInDate=${startDate}&checkOutDate=${endDate}&maxPrice=${+searchParams.maxPrice}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json;charset=utf-8" }
+    }
+  );
+  const d = await f.json();
+
   setTimeout(() => {
     if (Math.round(Math.random())) {
-      callback(null, { result: [] })
-    } else { callback(new Error('My Error')) }
-  }, Math.random() * 3 + 2000)
+      //     callback(null, { result: [] })
+      //   } else { callback(new Error('My Error')) }
+      callback(null, d);
+      setTimeout(() => {
+        renderToast(
+          { text: "Поиск устарел. Повторите поиск", type: "error" },
+          {
+            name: "Повторить поиск",
+            handler: () => {
+              search(getSearchParams(), callback);
+            },
+          }
+        );
+      }, 20 * 1000);
+    } else {
+      callback(new Error('Error 1'));
+    }
+  }, Math.random() * 3 + 500)
 }
 
 export function getSearchParams(): SearchFormData {
@@ -32,7 +67,7 @@ export function searchDataFunc(data: SearchFormData): void {
   console.log(data);
 }
 
-export function renderSearchFormBlock(checkinDate: Date, checkoutDate: Date) {
+export function renderSearchFormBlock(checkinDate?: Date, checkoutDate?: Date) {
   const today = new Date();
 
   function checkDate(firstDate: Date, secondDate: Date): Date {
@@ -95,3 +130,5 @@ export function renderSearchFormBlock(checkinDate: Date, checkoutDate: Date) {
     `
   )
 }
+export { SearchFormData };
+

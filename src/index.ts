@@ -6,7 +6,8 @@ import { getFavoritesAmount, getUserData, renderUserBlock } from './user.js'
 
 window.addEventListener('DOMContentLoaded', () => {
   renderUserBlock(getUserData(), getFavoritesAmount());
-  renderSearchFormBlock(new Date('2023-04-05'), new Date('2023-04-08'));
+  // renderSearchFormBlock(new Date('2023-04-05'), new Date('2023-04-08'));
+  renderSearchFormBlock();
   renderSearchStubBlock();
   // renderToast(
   //   { text: 'Это пример уведомления. Используйте его при необходимости', type: 'success' },

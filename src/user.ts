@@ -1,5 +1,6 @@
 import { renderBlock } from './lib.js'
 import { User, defaultUser } from './interfaces.js'
+import { FavouritePlace } from './search-results.js';
 
 export function getUserData(): User {
   const userData: unknown = JSON.parse(localStorage.getItem('user'));
@@ -17,16 +18,22 @@ export function getUserData(): User {
 }
 
 export function getFavoritesAmount(): number {
-  const favoritesAmount: unknown = JSON.parse(localStorage.getItem('favoritesAmount'));
-  if (favoritesAmount === null) {
-    console.log(`There's no favorites amount data`);
+  const favoriteItems: FavouritePlace[] = JSON.parse(localStorage.getItem('favoritesAmount'));
+
+  if (favoriteItems?.length === 0) {
+    console.log("Данные для favoritesAmount отсутствуют");
+    return null;
   }
-  if (typeof favoritesAmount === 'number') {
-    return favoritesAmount;
-  } else {
-    console.log(`Incorrect favorites amount data type`);
-  }
-  return null;
+  return favoriteItems?.length;
+  // if (favoritesAmount === null) {
+  //   console.log(`There's no favorites amount data`);
+  // }
+  // if (typeof favoritesAmount === 'number') {
+  //   return favoritesAmount;
+  // } else {
+  //   console.log(`Incorrect favorites amount data type`);
+  // }
+  // return null;
 }
 
 export function renderUserBlock(user: User, favoriteItemsAmount?: number): void {
