@@ -1,4 +1,36 @@
+import { ReserveCallback, SearchFormData } from './interfaces.js'
 import { renderBlock } from './lib.js'
+
+export const searchCallback: ReserveCallback = (error, result) => {
+  if (error === null && result !== null) {
+    console.log('Reserved');
+  }
+  else {
+    console.log('Error', error.message);
+  }
+}
+
+export function search(searchParams: SearchFormData, callback: ReserveCallback): void {
+  console.log('searchParams: ', searchParams);
+  setTimeout(() => {
+    if (Math.round(Math.random())) {
+      callback(null, { result: [] })
+    } else { callback(new Error('My Error')) }
+  }, Math.random() * 3 + 2000)
+}
+
+export function getSearchParams(): SearchFormData {
+  return {
+    city: (<HTMLInputElement>document.getElementById("city")).value,
+    checkinDate: new Date((<HTMLInputElement>document.getElementById("check-in-date")).value),
+    checkoutDate: new Date((<HTMLInputElement>document.getElementById("check-out-date")).value),
+    maxPrice: +(<HTMLInputElement>document.getElementById("max-price")).value
+  }
+}
+
+export function searchDataFunc(data: SearchFormData): void {
+  console.log(data);
+}
 
 export function renderSearchFormBlock(checkinDate: Date, checkoutDate: Date) {
   const today = new Date();
@@ -24,9 +56,6 @@ export function renderSearchFormBlock(checkinDate: Date, checkoutDate: Date) {
   const curCheckOutDate = checkoutDate ? checkDate(checkinDate, checkoutDate) : addDays(curCheckInDate, 3);
   const minDate = dateStr(today);
   const maxDate = dateStr(new Date(today.getFullYear(), today.getMonth() + 2, 1));
-
-
-  console.log(dateStr(curCheckInDate), dateStr(curCheckOutDate));
 
   renderBlock(
     'search-form-block',
