@@ -1,11 +1,25 @@
-export function renderBlock (elementId, html) {
+interface toastMessage {
+  text: string;
+  type: string;
+}
+
+interface toastAction {
+  name: string;
+  handler: () => void;
+}
+
+export const placesCoordinates = new Map<string, string>();
+
+placesCoordinates.set("Лондон", '51.500747,-0.124782');
+
+export function renderBlock(elementId: string, html: string): void {
   const element = document.getElementById(elementId)
   element.innerHTML = html
 }
 
-export function renderToast (message, action) {
+export function renderToast(message: toastMessage, action?: toastAction): void {
   let messageText = ''
-  
+
   if (message != null) {
     messageText = `
       <div id="info-block" class="info-block ${message.type}">
@@ -14,7 +28,7 @@ export function renderToast (message, action) {
       </div>
     `
   }
-  
+
   renderBlock(
     'toast-block',
     messageText
@@ -22,7 +36,7 @@ export function renderToast (message, action) {
 
   const button = document.getElementById('toast-main-action')
   if (button != null) {
-    button.onclick = function() {
+    button.onclick = function () {
       if (action != null && action.handler != null) {
         action.handler()
       }
