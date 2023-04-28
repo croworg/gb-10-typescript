@@ -28,8 +28,6 @@ export function getSearchParams(): SearchFormData {
   }
 }
 
-////
-
 export function searchDataFunc(data: SearchFormData): void {
   console.log(data);
 }
