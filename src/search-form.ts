@@ -1,6 +1,7 @@
-import { ReserveCallback, SearchFormData } from './interfaces.js'
+import { Reserve, ReserveCallback, SearchFormData } from './interfaces.js'
 import { placesCoordinates, renderBlock, renderToast } from './lib.js'
-import { renderSearchResultsBlock } from './search-results.js';
+import { Provider, renderSearchResultsBlock } from './search-results.js';
+import { FlatRentFlat, FlatRentParameters, FlatRentSdk, } from "./libs/flat-rent-sdk/flat-rent-sdk.js";
 
 interface requestParameters {
   coordinates: string;
@@ -19,24 +20,15 @@ export const searchCallback: ReserveCallback = (error, result) => {
 }
 
 export async function search(searchParams: SearchFormData, callback: ReserveCallback): Promise<void> {
-  // console.log('searchParams: ', searchParams);
-  const startDate = searchParams.checkinDate.toISOString().split('T', 1);
-  const endDate = searchParams.checkoutDate.toISOString().split('T', 1);
-
-  const f = await fetch(`http://127.0.0.1:3300/places?coordinates=${placesCoordinates.get(searchParams.city)}
-  &checkInDate=${startDate}&checkOutDate=${endDate}&maxPrice=${+searchParams.maxPrice}`,
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json;charset=utf-8" }
-    }
-  );
-  const d = await f.json();
+  const homyResult = await searchHomy(searchParams);
+  const flatRentResult = await searchFlatRent(searchParams);
+  const results = [...homyResult, ...flatRentResult];
 
   setTimeout(() => {
     if (Math.round(Math.random())) {
       //     callback(null, { result: [] })
       //   } else { callback(new Error('My Error')) }
-      callback(null, d);
+      callback(null, results);
       setTimeout(() => {
         renderToast(
           { text: "Поиск устарел. Повторите поиск", type: "error" },
@@ -47,11 +39,59 @@ export async function search(searchParams: SearchFormData, callback: ReserveCall
             },
           }
         );
-      }, 20 * 1000);
+      }, 60 * 1000);
     } else {
       callback(new Error('Error 1'));
     }
   }, Math.random() * 3 + 500)
+}
+
+export async function searchHomy(
+  searchParams: SearchFormData
+): Promise<Reserve[]> {
+  const startDate = searchParams.checkinDate.toISOString().split('T', 1);
+  const endDate = searchParams.checkoutDate.toISOString().split('T', 1);
+  const f = await fetch(
+    `http://127.0.0.1:3300/places?coordinates=${placesCoordinates.get(searchParams.city)
+    }&checkInDate=${startDate}&checkOutDate=${endDate}&maxPrice=${+searchParams.maxPrice}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json;charset=utf-8",
+      },
+    }
+  );
+  const searchResult = await f.json();
+
+  return searchResult.map((place) => {
+    return { ...place, provider: Provider.Homy };
+  });
+}
+
+export async function searchFlatRent(
+  searchParams: SearchFormData
+): Promise<Reserve[]> {
+  const newFlatRent = new FlatRentSdk();
+  const parameters: FlatRentParameters = {
+    city: searchParams.city,
+    checkInDate: new Date(searchParams.checkinDate),
+    checkOutDate: new Date(searchParams.checkoutDate),
+    priceLimit: searchParams.maxPrice,
+  };
+
+  const searchResult = await newFlatRent.search(parameters);
+  const mappedResult: Reserve[] = searchResult.map((place) => {
+    return {
+      bookedDates: place.bookedDates,
+      description: place.details,
+      id: place.id,
+      image: place.photos[0],
+      name: place.title,
+      price: place.totalPrice,
+      provider: Provider.FlatRent,
+    };
+  });
+  return mappedResult;
 }
 
 export function getSearchParams(): SearchFormData {
@@ -100,8 +140,10 @@ export function renderSearchFormBlock(checkinDate?: Date, checkoutDate?: Date) {
         <div class="row">
           <div>
             <label for="city">Город</label>
-            <input id="city" type="text" disabled value="Санкт-Петербург" />
-            <input type="hidden" disabled value="59.9386,30.3141" />
+            <!--<input id="city" type="text" disabled value="Санкт-Петербург" />
+            <input type="hidden" disabled value="59.9386,30.3141" />-->
+            <input id="city" type="text" disabled value="Лондон" />
+            <input type="hidden" disabled value="51.500747,-0.124782" />
           </div>
           <!--<div class="providers">
             <label><input type="checkbox" name="provider" value="homy" checked /> Homy</label>
