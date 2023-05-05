@@ -1,22 +1,22 @@
-import { searchCallback, getSearchParams, search } from './search-form.js';
-import { renderSearchFormBlock } from './search-form.js'
-import { renderSearchStubBlock } from './search-results.js'
-import { getFavoritesAmount, getUserData, renderUserBlock } from './user.js'
-// import { renderToast } from './lib.js'
+import { renderSearchStubBlock } from './search-results.js';
+import { getFavoritesAmount, getUserData, renderUserBlock } from './user.js';
+import { callback, getSearchParams, search } from "./search.js";
+import { renderSearchFormBlock } from "./search-form-render.js";
+// import { renderToast, replacer, reviver } from "./lib.js";
 
 window.addEventListener('DOMContentLoaded', () => {
   renderUserBlock(getUserData(), getFavoritesAmount());
-  // renderSearchFormBlock(new Date('2023-04-05'), new Date('2023-04-08'));
   renderSearchFormBlock();
   renderSearchStubBlock();
   // renderToast(
   //   { text: 'Это пример уведомления. Используйте его при необходимости', type: 'success' },
   //   { name: 'Понял', handler: () => { console.log('Уведомление закрыто') } }
   // );
-  document.getElementById('search-form-block').addEventListener('submit', (e) => {
-    e.preventDefault();
-    search(getSearchParams(), searchCallback);
-  })
+  document.getElementById('search-form-block')
+    .addEventListener('submit', (e) => {
+      e.preventDefault();
+      search(getSearchParams(), callback);
+    })
 })
 
 
