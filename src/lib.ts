@@ -13,11 +13,11 @@ export const placesCoordinates = new Map<string, string>();
 placesCoordinates.set("Лондон", '51.500747,-0.124782');
 
 export function renderBlock(elementId: string, html: string): void {
-  const element = document.getElementById(elementId)
-  element.innerHTML = html
+  const element = <HTMLElement>document.getElementById(elementId);
+  element.innerHTML = html;
 }
 
-export function renderToast(message: toastMessage, action?: toastAction): void {
+export function renderToast(message: toastMessage | null, action?: toastAction | null): void {
   let messageText = ''
 
   if (message != null) {
@@ -61,11 +61,17 @@ export function replacer<V>(key: string, value: V): JSONreplacer | V {
   }
 }
 
-export function reviver(key, value) {
+export function reviver(_: any, value: any) {
   if (typeof value === "object" && value !== null) {
     if (value.dataType === "Map") {
       return new Map(value.value);
     }
   }
   return value;
+}
+
+export enum sortType {
+  cheap = "cheap",
+  expensive = "expensive",
+  close = "close",
 }

@@ -1,7 +1,9 @@
 import { Reserve } from './interfaces.js';
-import { renderBlock, renderToast } from './lib.js'
-import { getSearchParams, SearchFormData } from "./search-form.js";
+import { renderBlock, renderToast, sortType } from './lib.js'
+// import { getSearchParams, SearchFormData } from "./search-form.js";
+import { getSearchParams, SearchFormData } from "./search.js";
 import { FlatRentSdk } from "./libs/flat-rent-sdk/flat-rent-sdk.js";
+import { renderSearchResultsBlock } from './search-results-render.js';
 
 export interface FavouritePlace {
   id: string;
@@ -42,10 +44,10 @@ export function renderEmptyOrErrorSearchBlock(reasonMessage: string): void {
 }
 
 export function toggleFavoriteItem(place: FavouritePlace): void {
-  const favoritesElements = document.querySelectorAll(".favorites");
+  const favoritesElements = <NodeListOf<HTMLElement>>document.querySelectorAll(".favorites");
 
   const localStorageFavouriteItems: FavouritePlace[] = JSON.parse(
-    localStorage.getItem("favoriteItems")
+    <string>localStorage.getItem("favoriteItems")
   );
   if (!localStorageFavouriteItems) {
     const favoriteItems: FavouritePlace[] = [];
@@ -93,10 +95,8 @@ export async function bookPlaceHomy(
   id: number | string,
   searchParams: SearchFormData,
 ): Promise<BookResult> {
-  const startDate = searchParams.checkinDate.toISOString()
-  const endDate = searchParams.checkoutDate.toISOString()
   const f = await fetch(
-    `http://127.0.0.1:3030/places/${id}?checkInDate=${startDate}&checkOutDate=${endDate}`,
+    `http://127.0.0.1:3030/places/${id}?checkInDate=${searchParams.checkinDate}&checkOutDate=${searchParams.checkoutDate}`,
     {
       method: "PATCH",
       headers: {
@@ -170,9 +170,9 @@ export async function bookPlace(
   }
 }
 
-export function renderSearchResultsBlock(results: Reserve[]): void {
+export function getResultsHTML(results: Reserve[]): string {
   const localStorageFavouriteItems: FavouritePlace[] = JSON.parse(
-    localStorage.getItem("favoriteItems")
+    <string>localStorage.getItem("favoriteItems")
   );
   let resultsHTML = "";
   results.forEach((result) => {
@@ -207,49 +207,75 @@ export function renderSearchResultsBlock(results: Reserve[]): void {
         </div>
       </li>`;
   });
-  console.log(resultsHTML);
-  renderBlock(
-    "search-results-block",
-    `
-    <div class="search-results-header">
-        <p>Результаты поиска</p>
-Expand All
-	@@ -40,49 +166,36 @@ export function renderSearchResultsBlock () {
-        </div>
-    </div>
-    <ul class="results-list">
-    ${resultsHTML}
-    </ul>
-    `
-  );
-
-  const favoriteItems = document.getElementsByClassName("favorites");
-  for (let i = 0; i < favoriteItems.length; i++) {
-    favoriteItems[i].addEventListener("click", (e) => {
-      if (e.target instanceof HTMLElement) {
-        toggleFavoriteItem({
-          id: String(e.target.dataset.id),
-          name: e.target.dataset.name,
-          img: e.target.dataset.img,
-        });
-      }
-    });
-  }
-
-  const bookButtons = document.getElementsByClassName("book-btn");
-  console.log(bookButtons);
-
-  for (let i = 0; i < bookButtons.length; i++) {
-    bookButtons[i].addEventListener("click", (e) => {
-      console.log(e);
-
-      if (e.target instanceof HTMLButtonElement) {
-        bookPlace(
-          e.target.dataset.id,
-          getSearchParams(),
-          Provider[e.target.dataset.provider]
-        );
-      }
-    });
-  }
+  return resultsHTML;
 }
+
+export function sortResults(results: Reserve[], type = sortType.cheap): void {
+  let sortedResults: Reserve[];
+  switch (type) {
+    case sortType.cheap:
+      sortedResults = results.sort((a, b) => a.price - b.price);
+      break;
+    case sortType.expensive:
+      sortedResults = results.sort((a, b) => b.price - a.price);
+      break;
+    case sortType.close:
+      sortedResults = results.sort((a, b) => {
+        if (a.remoteness !== undefined && b.remoteness !== undefined) {
+          return a.remoteness - b.remoteness;
+        }
+        return 0;
+      });
+      break;
+    default:
+      sortedResults = [];
+  }
+  renderSearchResultsBlock(sortedResults, type);
+}
+
+//   console.log(resultsHTML);
+//   renderBlock(
+//     "search-results-block",
+//     `
+//     <div class="search-results-header">
+//         <p>Результаты поиска</p>
+// Expand All
+// 	@@ -40,49 +166,36 @@ export function renderSearchResultsBlock () {
+//         </div>
+//     </div>
+//     <ul class="results-list">
+//     ${resultsHTML}
+//     </ul>
+//     `
+//   );
+
+//   const favoriteItems = document.getElementsByClassName("favorites");
+//   for (let i = 0; i < favoriteItems.length; i++) {
+//     favoriteItems[i].addEventListener("click", (e) => {
+//       if (e.target instanceof HTMLElement) {
+//         toggleFavoriteItem({
+//           id: String(e.target.dataset.id),
+//           name: e.target.dataset.name,
+//           img: e.target.dataset.img,
+//         });
+//       }
+//     });
+//   }
+
+//   const bookButtons = document.getElementsByClassName("book-btn");
+//   console.log(bookButtons);
+
+//   for (let i = 0; i < bookButtons.length; i++) {
+//     bookButtons[i].addEventListener("click", (e) => {
+//       console.log(e);
+
+//       if (e.target instanceof HTMLButtonElement) {
+//         bookPlace(
+//           e.target.dataset.id,
+//           getSearchParams(),
+//           Provider[e.target.dataset.provider]
+//         );
+//       }
+//     });
+//   }
+// }
