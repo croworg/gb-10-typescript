@@ -3,7 +3,7 @@ import { User, defaultUser } from './interfaces.js'
 import { FavouritePlace } from './search-results.js';
 
 export function getUserData(): User {
-  const userData: unknown = JSON.parse(localStorage.getItem('user'));
+  const userData: unknown = JSON.parse(localStorage.getItem('user') ?? '');
   const user: User = new User(userData as User);
 
   if (typeof user === null) {
@@ -17,23 +17,14 @@ export function getUserData(): User {
   }
 }
 
-export function getFavoritesAmount(): number {
-  const favoriteItems: FavouritePlace[] = JSON.parse(localStorage.getItem('favoritesAmount'));
+export function getFavoritesAmount(): number | null {
+  const favoriteItemsRaw: any = localStorage.getItem('favoritesAmount');
 
-  if (favoriteItems?.length === 0) {
-    console.log("Данные для favoritesAmount отсутствуют");
-    return null;
+  if (favoriteItemsRaw !== null) {
+    const favoriteItems: FavouritePlace[] = JSON.parse(favoriteItemsRaw);
+    return favoriteItems.length;
   }
-  return favoriteItems?.length;
-  // if (favoritesAmount === null) {
-  //   console.log(`There's no favorites amount data`);
-  // }
-  // if (typeof favoritesAmount === 'number') {
-  //   return favoritesAmount;
-  // } else {
-  //   console.log(`Incorrect favorites amount data type`);
-  // }
-  // return null;
+  return 0;
 }
 
 export function renderUserBlock(user: User, favoriteItemsAmount?: number): void {

@@ -44,10 +44,10 @@ export function renderEmptyOrErrorSearchBlock(reasonMessage: string): void {
 }
 
 export function toggleFavoriteItem(place: FavouritePlace): void {
-  const favoritesElements = document.querySelectorAll(".favorites");
+  const favoritesElements = <NodeListOf<HTMLElement>>document.querySelectorAll(".favorites");
 
   const localStorageFavouriteItems: FavouritePlace[] = JSON.parse(
-    localStorage.getItem("favoriteItems")
+    <string>localStorage.getItem("favoriteItems")
   );
   if (!localStorageFavouriteItems) {
     const favoriteItems: FavouritePlace[] = [];
@@ -172,7 +172,7 @@ export async function bookPlace(
 
 export function getResultsHTML(results: Reserve[]): string {
   const localStorageFavouriteItems: FavouritePlace[] = JSON.parse(
-    localStorage.getItem("favoriteItems")
+    <string>localStorage.getItem("favoriteItems")
   );
   let resultsHTML = "";
   results.forEach((result) => {
@@ -220,9 +220,15 @@ export function sortResults(results: Reserve[], type = sortType.cheap): void {
       sortedResults = results.sort((a, b) => b.price - a.price);
       break;
     case sortType.close:
-      sortedResults = results.sort((a, b) => a.remoteness - b.remoteness);
+      sortedResults = results.sort((a, b) => {
+        if (a.remoteness !== undefined && b.remoteness !== undefined) {
+          return a.remoteness - b.remoteness;
+        }
+        return 0;
+      });
       break;
     default:
+      sortedResults = [];
   }
   renderSearchResultsBlock(sortedResults, type);
 }

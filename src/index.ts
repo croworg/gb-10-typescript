@@ -5,7 +5,7 @@ import { renderSearchFormBlock } from "./search-form-render.js";
 // import { renderToast, replacer, reviver } from "./lib.js";
 
 window.addEventListener('DOMContentLoaded', () => {
-  renderUserBlock(getUserData(), getFavoritesAmount());
+  renderUserBlock(getUserData(), <number>getFavoritesAmount());
   renderSearchFormBlock();
   renderSearchStubBlock();
   // renderToast(
@@ -13,7 +13,7 @@ window.addEventListener('DOMContentLoaded', () => {
   //   { name: 'Понял', handler: () => { console.log('Уведомление закрыто') } }
   // );
   document.getElementById('search-form-block')
-    .addEventListener('submit', (e) => {
+    ?.addEventListener('submit', (e) => {
       e.preventDefault();
       search(getSearchParams(), callback);
     })
